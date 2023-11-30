@@ -1,4 +1,44 @@
-document.addEventListener('DOMContentLoaded', function () {
+window.WptbFrontendData = {
+	scrollManager: {
+		frontendCalculationStatus: false,
+	},
+	lazyLoad: {
+		enabled: true,
+		visibilityPercentage: '10',
+		backgroundColor: '#FFFFFF00',
+		iconName: {
+			name: '',
+		},
+		iconColor: '#000000',
+		iconSize: '20',
+		iconAnimation: 'none',
+		imageLoadAnimation: 'none',
+		imageLoadAnimationSpeed: '8',
+		imageLoadAnimationDirection: 'right',
+		imageLoadAnimationPerspective: '1000',
+		flashColor: '#FFFFFF',
+		delay: 0,
+		iconSvg: null,
+	},
+	stylePass: {
+		stylesheets: {
+			create: {
+				'wp-table-builder-css':
+					'https://good.icook.tw/wp-content/plugins/wp-table-builder/inc/frontend/css/wp-table-builder-frontend.css?version=1.4.13',
+				'wp-table-builder-procommon-css':
+					'https://good.icook.tw/wp-content/plugins/wp-table-builder-pro/inc/common/css/wp-table-builder-pro.css?version=1.4.13',
+				'wp-table-builder-pro-frontend-css':
+					'https://good.icook.tw/wp-content/plugins/wp-table-builder-pro/inc/frontend/css/wp-table-builder-pro-frontend.css?version=1.4.13',
+			},
+			copy: ['style[id="wptb-lazy-load-styles"]'],
+		},
+		settings: {
+			disableThemeStylesForAll: false,
+		},
+	},
+};
+
+window.WptbFrontendInit = function init() {
 	const tableContainers = document.getElementsByClassName('wptb-table-container');
 
 	/**
@@ -52,6 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	function wptb_tableReconstraction() {
 		for (let i = 0; i < tableContainers.length; i++) {
 			const tableContainer = tableContainers[i];
+			if (tableContainer.classList.contains('wptb-table-container-ready')) {
+				return;
+			}
 
 			// Set default indicator of creating a new table in true
 			let createNewTableIndic = true;
@@ -132,9 +175,8 @@ document.addEventListener('DOMContentLoaded', function () {
 								// with our conditions. If it compliance, remain this table
 								// and cancel creating a new table ( createNewTableIndic = false ).
 								if (tableContainer.getElementsByClassName('wptb-preview-table-mobile').length > 0) {
-									wptbPreviewTableMobile = tableContainer.getElementsByClassName(
-										'wptb-preview-table-mobile'
-									)[0];
+									wptbPreviewTableMobile =
+										tableContainer.getElementsByClassName('wptb-preview-table-mobile')[0];
 									wptbPreviewTableMobile.classList.remove('wptb-mobile-hide');
 									const dataWholeColumnInContainer =
 										wptbPreviewTableMobile.dataset.wholeColumnsInContainer;
@@ -264,9 +306,10 @@ document.addEventListener('DOMContentLoaded', function () {
 											for (let j = 0; j < countRows; j++) {
 												const sectionNumber = Math.floor(j / tableColumns);
 												const tr = document.createElement('tr');
-												const tdLeftHeader = previewTable.rows[0].children[
-													j - sectionNumber * tableColumns
-												].cloneNode(true);
+												const tdLeftHeader =
+													previewTable.rows[0].children[
+														j - sectionNumber * tableColumns
+													].cloneNode(true);
 												let td;
 												const rowFirstStyles = window.getComputedStyle(previewTable.rows[0]);
 												if (!tdLeftHeader.style.backgroundColor) {
@@ -293,9 +336,10 @@ document.addEventListener('DOMContentLoaded', function () {
 													k++
 												) {
 													if (k < previewTable.rows.length) {
-														td = previewTable.rows[k].children[
-															j - sectionNumber * tableColumns
-														].cloneNode(true);
+														td =
+															previewTable.rows[k].children[
+																j - sectionNumber * tableColumns
+															].cloneNode(true);
 														const rowKStyles = window.getComputedStyle(
 															previewTable.rows[k]
 														);
@@ -469,6 +513,10 @@ document.addEventListener('DOMContentLoaded', function () {
 		// let frontendEditLink = document.querySelectorAll( '.wptb-frontend-table-edit-link' );
 		for (let i = 0; i < wptbTableContainers.length; i++) {
 			const wptbTableContainer = wptbTableContainers[i];
+
+			if (wptbTableContainer.classList.contains('wptb-table-container-ready')) {
+				return;
+			}
 
 			wptbTableContainer.classList.add(`wptb-table-container-${i}`);
 
@@ -654,14 +702,11 @@ document.addEventListener('DOMContentLoaded', function () {
 						head.appendChild(cssForTdsWidthAuto);
 					}
 				}
+
+				wptbTableContainers[i].classList.add('wptb-table-container-ready');
 			}
 		}
 	}
-
-	window.addEventListener('resize', () => {
-		wptb_tdDefaultWidth();
-		wptb_tableReconstraction();
-	});
 
 	// code for adding of old css styles for correct view
 	const elements = document.getElementsByClassName('wptb-ph-element');
@@ -710,30 +755,6 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	}
 
-	const textIconFrontendEditFix = () => {
-		const tableObjects = WptbFrontendBase.getTableObjects();
-
-		tableObjects.map(({ mainTable }) => {
-			const textIconElements = Array.from(mainTable.querySelectorAll('.wptb-text_icon_element-container'));
-
-			textIconElements.map((tiEl) => {
-				tiEl.setAttribute('contenteditable', false);
-			});
-		});
-	};
-
-	const badgeFrontendEditFix = () => {
-		const tableObjects = WptbFrontendBase.getTableObjects();
-
-		tableObjects.map(({ mainTable }) => {
-			const textIconElements = Array.from(mainTable.querySelectorAll('.wptb-badge-container'));
-
-			textIconElements.map((tiEl) => {
-				tiEl.setAttribute('contenteditable', false);
-			});
-		});
-	};
-
 	sortingTable();
 	const responsiveFrontReady = new CustomEvent('responsive:front', {
 		detail: {
@@ -754,9 +775,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	// initialize lazy load module
 	WPTB_LazyLoad.init(WptbFrontendData.lazyLoad);
 
-	textIconFrontendEditFix();
-    badgeFrontendEditFix();
-
 	// initialize style pass
 	WPTB_StylePass.init(WptbFrontendData.stylePass);
-});
+};
